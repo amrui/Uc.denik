@@ -9,7 +9,7 @@ class UcetniDenikApp:
         self.create_widgets()
 
     def create_widgets(self):
-        # Hlavní rámec
+        # Hlavní okno
         main_frame = ttk.Frame(self.root, padding=(10, 10, 10, 10), style="TFrame")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -24,12 +24,12 @@ class UcetniDenikApp:
         ttk.Label(entry_frame, text="MD").grid(row=0, column=4, padx=5, pady=5, sticky="e")
         ttk.Label(entry_frame, text="DAL").grid(row=0, column=5, padx=5, pady=5, sticky="e")
 
-        self.poradi_entry = PlaceholderEntry(entry_frame, placeholder="1", readonly=True)
-        self.text_entry = PlaceholderEntry(entry_frame, placeholder="...", readonly=True)
-        self.doklad_entry = PlaceholderEntry(entry_frame, placeholder="PPD", readonly=True)
-        self.kc_entry = PlaceholderEntry(entry_frame, placeholder="0.00 Kč", readonly=True)
-        self.md_combobox = PlaceholderEntry(entry_frame, placeholder="001", readonly=True)
-        self.dal_combobox = PlaceholderEntry(entry_frame, placeholder="001", readonly=True)
+        self.poradi_entry = PlaceholderEntry(entry_frame, placeholder="1", readonly=True, alpha=0.5)
+        self.text_entry = PlaceholderEntry(entry_frame, placeholder="...", readonly=True, alpha=0.5)
+        self.doklad_entry = PlaceholderEntry(entry_frame, placeholder="PPD", readonly=True, alpha=0.5)
+        self.kc_entry = PlaceholderEntry(entry_frame, placeholder="0.00 Kč", readonly=True, alpha=0.5)
+        self.md_combobox = ttk.Combobox(entry_frame, values=list(range(711)), state="readonly")
+        self.dal_combobox = ttk.Combobox(entry_frame, values=list(range(711)), state="readonly")
 
         self.poradi_entry.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
         self.text_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
@@ -60,9 +60,9 @@ class UcetniDenikApp:
         self.treeview.configure(yscrollcommand=scrollbar.set)
 
         # Změny ve vzhledu
-        self.root.configure(bg="#FFFFFF")  # Bílá barva pozadí
+        self.root.configure(bg="#FFFFFF")
         style = ttk.Style(self.root)
-        style.configure("TFrame", background="#FFFFFF")  # Bílá barva pozadí
+        style.configure("TFrame", background="#FFFFFF")
         style.configure("TButton", background="#A9A9A9", foreground="#000000", borderwidth=5, relief="flat", padding=(8, 8))  # Šedá barva pozadí, černý text, zaoblené hrany
 
         # Konfigurace pro umístění okna na střed
@@ -70,11 +70,11 @@ class UcetniDenikApp:
         self.root.grid_rowconfigure(0, weight=1)
         main_frame.grid_columnconfigure(0, weight=1)
         main_frame.grid_rowconfigure(1, weight=1)
-        entry_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")  # Adjusted to make all columns resizable
+        entry_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1, uniform="group1")
         table_frame.grid_columnconfigure(0, weight=1)
         table_frame.grid_rowconfigure(0, weight=1)
 
-        # Přidání konfigurace pro elastic design záznamů
+        # Přidání konfigurace pro elastic design
         self.treeview.bind("<Configure>", self.adjust_treeview_columns)
 
     def pridat_zaznam(self):
@@ -94,8 +94,8 @@ class UcetniDenikApp:
         self.text_entry.delete(0, "end")
         self.doklad_entry.delete(0, "end")
         self.kc_entry.delete(0, "end")
-        self.md_combobox.delete(0, "end")
-        self.dal_combobox.delete(0, "end")
+        self.md_combobox.set("")
+        self.dal_combobox.set("")
 
     def smazat_zaznam(self):
         selected_item = self.treeview.selection()
@@ -108,16 +108,18 @@ class UcetniDenikApp:
             self.treeview.column(col, width=int(self.treeview.winfo_width()/len(self.treeview["columns"])))
 
 class PlaceholderEntry(ttk.Entry):
-    def __init__(self, master=None, placeholder="", readonly=False, **kwargs):
+    def __init__(self, master=None, placeholder="", readonly=False, alpha=1.0, **kwargs):
         super().__init__(master, **kwargs)
 
         self.placeholder = placeholder
         self.readonly = readonly
+        self.alpha = alpha
 
         self.insert(0, self.placeholder)
         self.bind("<FocusIn>", self.on_entry_click)
         self.bind("<FocusOut>", self.on_focus_out)
         self.configure(state="readonly" if self.readonly else "normal")
+        self.configure(foreground=f"#{int(255*self.alpha):02x}{int(255*self.alpha):02x}{int(255*self.alpha):02x}")
 
     def on_entry_click(self, event):
         if self.readonly:
@@ -129,23 +131,7 @@ class PlaceholderEntry(ttk.Entry):
         if self.readonly and not self.get():
             self.insert(0, self.placeholder)
             self.configure(state="readonly")
-
-class PlaceholderCombobox(ttk.Combobox):
-    def __init__(self, master=None, placeholder="", **kwargs):
-        super().__init__(master, **kwargs)
-
-        self.placeholder = placeholder
-        self.set(self.placeholder)
-        self.bind("<FocusIn>", self.on_combobox_click)
-        self.bind("<FocusOut>", self.on_focus_out)
-
-    def on_combobox_click(self, event):
-        if self.get() == self.placeholder:
-            self.set("")
-
-    def on_focus_out(self, event):
-        if not self.get():
-            self.set(self.placeholder)
+        self.configure(foreground=f"#{int(255*self.alpha):02x}{int(255*self.alpha):02x}{int(255*self.alpha):02x}")
 
 if __name__ == "__main__":
     root = tk.Tk()
